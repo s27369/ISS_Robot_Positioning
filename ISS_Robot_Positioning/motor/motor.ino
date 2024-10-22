@@ -173,6 +173,8 @@ class Vehicle{
     //t=s/v
     //calculate time
     int t = (dist/MOTOR_TEST_SPEED)*1000;
+    if (t<0)
+      t*=-1;
     Serial.println(t);
     //set direction
     direction dir = dist>=0?FORWARD:REVERSE;
@@ -186,7 +188,7 @@ class Vehicle{
     if (dist>=0){
       dist_l += motor_l.get_counter();
       dist_r += motor_r.get_counter();
-    }else{
+    }else{//dobrze???
       dist_l -= motor_l.get_counter();
       dist_r -= motor_r.get_counter();
     }//dobrze???
@@ -220,6 +222,8 @@ class Vehicle{
     posY_prev = posY_now;
     posX_now = get_new_x();
     posY_now = get_new_y();
+    rot = get_new_rotation();
+    rotation_prev = rotation_now;
 
     print_location_info();
   }
