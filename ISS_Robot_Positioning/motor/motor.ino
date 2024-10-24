@@ -197,6 +197,29 @@ class Vehicle{
     motor_r.get_counter();
   }
 
+  void measure_speed(){
+    Serial.println("---START---");
+    for(int i=50; i<256; i+=10){
+      motor_l.set_direction(FORWARD);
+      motor_r.set_direction(FORWARD);
+
+      //movement
+      set_speed(i);
+      int traveled=0;
+      delay(t_delta);
+      traveled += motor_l.get_counter();
+      stop();
+      
+      Serial.print(motor_speed);
+      Serial.print(",");
+      Serial.println(traveled);
+      //reset
+      motor_l.get_counter();
+      motor_r.get_counter();
+    }
+    Serial.println("---END---");
+  }
+
   void handle_command(String command){
       String s = command.substring(0, command.indexOf(' '));
       int start_pos = command.indexOf(' ')+1;
@@ -206,6 +229,10 @@ class Vehicle{
         return;
       }
       else if (s.equals("T")){
+        turn(dist);
+        return;
+      }
+      else if (s.equals("TEST")){
         turn(dist);
         return;
       }
