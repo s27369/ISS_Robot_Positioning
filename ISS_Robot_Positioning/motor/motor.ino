@@ -133,7 +133,7 @@ class Vehicle{
     int motor_speed;
     const int MOTOR_TEST_SPEED = 100;
 
-  Vehicle( Motor m_l, Motor m_r) 
+  Vehicle( Motor& m_l, Motor& m_r)
     : motor_l(m_l), motor_r(m_r){
       t_delta=1000; 
       motor_l.set_speed(0);
@@ -233,7 +233,7 @@ class Vehicle{
         return;
       }
       else if (s.equals("TEST")){
-        turn(dist);
+        measure_speed();
         return;
       }
       Serial.println("Incorrect command");
