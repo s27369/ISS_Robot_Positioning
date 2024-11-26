@@ -92,57 +92,39 @@ class Motor{
   
 
   void print_counter(){
-    Serial.print("Motor#");
-    Serial.print(id);
-    Serial.print(" Interrupts per second = ");
-    Serial.println(counter);
-    counter=0;
+    Serial.print("id: ");
+    Serial.print(counter);
   }
 
   int get_counter(){
-    int c = counter;
+    return counter;
+  }
+  void reset_counter(){
     counter=0;
-    Serial.print("id: ");
-    Serial.print(id);
-    Serial.print(", returned counter: ");
-    Serial.println(c);
-    return c;
   }
 
   int get_speed(){
     return speed;
   }
-
 };
 
 class Vehicle{
-  
-  //delta_rotation = (dist_r-dist_l)/l
-  //dist_total = (dist_r+dist_l)/2
-  //turn_angle = (L/2)*(dist_l+dist_r)/(dist_r-dist_l)
-  //new_x = posX_prev-turn_angle*sin(rotation_prev)+turn_angle*sin(rotation_prev+delta_rotation)
-  //new_y = posY_prev+turn_angle*cos(rotation_prev)-turn_angle*cos(rotation_prev+delta_rotation)
-  //new_rotation = rotation_prev+delta_rotation
 
-  
   public:
-    Motor& motor_l, motor_r;
-    int 
-    posX_now, posY_now, 
-    posX_prev, posY_prev, 
+    Motor& motor_l, &motor_r;
+    int
     dist_l, dist_r,
-    t_delta, 
+    t_delta,
     rotation_now;
     int motor_speed;
     const int MOTOR_TEST_SPEED = 150;
 
   Vehicle( Motor& m_l, Motor& m_r)
     : motor_l(m_l), motor_r(m_r){
-      t_delta=1000; 
+      t_delta=1000;
       motor_l.set_speed(0);
       motor_r.set_speed(0);
       motor_speed=motor_l.get_speed();
-      // Serial.println(motor_speed);
   }
 
   void set_speed(int speed){
@@ -200,43 +182,35 @@ class Vehicle{
     motor_r.get_counter();
   }
 
+  void set_direction(direction dir){
+    motor_l.set_direction(dir);
+    motor_r.set_direction(dir);
+  }
+
   void measure_speed(){
     Serial.println("---START---");
-    
-    for(int i=100; i<256; i+=20){
-      // Serial.print("i=");
-      // Serial.println(i);
-      
 
-      motor_l.set_direction(FORWARD);
-      motor_l.set_speed(i);
-      motor_r.set_direction(FORWARD);
-      motor_r.set_speed(i);
-      // delay(2000);
-      
+    for(int i=80; i<256; i+=20){
       //movement
-      // set_speed(i);
-      // motor_r.set_speed(i);
-      // motor_l.set_speed(i);
-      // motor_speed=i;
+      set_direction(FORWARD);
+      set_speed(i);
       int traveled_l=0, traveled_r=0;
       delay(t_delta);
-      traveled_l += motor_l.get_counter();
-      traveled_r += motor_r.get_counter();
+      traveled_l = motor_l.get_counter();
+      traveled_r = motor_r.get_counter();
       stop();
+
       // Serial.print();
-      Serial.print(motor_speed);
+      // Serial.print(motor_speed);
+      Serial.print(i);
       Serial.print(",");
       Serial.print(traveled_l);
       Serial.print(",");
-      Serial.println(traveled_r);
+      Serial.print(traveled_r);
       //reset
-      motor_l.get_counter();
-      motor_r.get_counter();
-      motor_l.set_speed(0);
-      motor_r.set_speed(0);
-      motor_speed=0;
-      delay(1000);
+      motor_l.reset_counter();
+      motor_r.reset_counter();
+      delay(3000);
     }
     Serial.println("---END---");
   }
@@ -245,10 +219,10 @@ class Vehicle{
     motor_l.set_direction(FORWARD);
     motor_l.set_speed(150);
     delay(2000);
-    motor_l.set_speed(0); 
+    motor_l.set_speed(0);
 
     motor_r.set_direction(FORWARD);
-    motor_r.set_speed(150); 
+    motor_r.set_speed(150);
     delay(2000);
     motor_r.set_speed(0);
   }
@@ -272,9 +246,6 @@ class Vehicle{
         return;
       }
       Serial.println("Incorrect command");
-      // print("Incorrect command");
-    
-    
   }
 
 };
@@ -285,18 +256,15 @@ Vehicle vehicle = Vehicle(motor1, motor2);
 
 void encoder_handler_1(){//LEFT
   motor1.increment_counter();
-  // Serial.println("l");
 }
 
 void encoder_handler_2(){//RIGHT
   motor2.increment_counter();
-  // Serial.println("Right motor interrupt triggered");
-  // Serial.println("r");
 }
 
 
 
-void setup() 
+void setup()
 {
   delay(1000);
   Serial.begin(SERIAL_BAUD_RATE);
@@ -306,10 +274,9 @@ void setup()
   pinMode(PIN_ENCODER_INTERRUPT_P, INPUT);
   attachInterrupt(digitalPinToInterrupt(PIN_ENCODER_INTERRUPT_L), encoder_handler_1, RISING);
   attachInterrupt(digitalPinToInterrupt(PIN_ENCODER_INTERRUPT_P), encoder_handler_2, RISING);
-  
 }
 
-String inputString = ""; 
+String inputString = "";
 bool stringComplete = false;
 
 void serialEvent() {
@@ -324,10 +291,10 @@ void serialEvent() {
 
 void loop() {
   serialEvent();
-  
+
   if (stringComplete) {
-    vehicle.handle_command(inputString); 
-    inputString = ""; 
-    stringComplete = false; 
+    vehicle.handle_command(inputString);
+    inputString = "";
+    stringComplete = false;
   }
 }
